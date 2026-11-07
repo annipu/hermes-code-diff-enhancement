@@ -1,0 +1,40 @@
+{
+  "id": "cde-8e876298",
+  "targetBuild": "8e876298 (stampClock 2026-11-06T01:21:46Z)",
+  "feature": "code-diff-enhancement (chat tool-card split diff view; preview/review stay unified)",
+  "note": "byte transforms derived from a verified stock/patched pair; NOT a redistribution of host chunks \u2014 find anchors locate each edit, replace carries only the replacement bytes",
+  "files": [
+    {
+      "path": "assets/diff-lines-kfjp4AIL.js",
+      "preSha256": "a5f9e133eddbde80d83769e4b1df94d0ad307205078f0433afb58d983ec5639d",
+      "postSha256": "907e220f5b79b3ce756d87e31521cb89182c50a303276d13f398395ffd39531a",
+      "editCount": 3,
+      "edits": [
+        {
+          "find": "ff:t,fullText:n,path:r,showLineNumbers:i=!1,virtualized:c=!1}){let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n]),u=d.useMemo(()=",
+          "replace": "ff:t,fullText:n,layout:Q=`unified`,path:r,showLineNumbers:i=!1,virtualized:c=!1}){let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n]),V2=n==null&&Q===`split`?cd(l):null,u=d.useMemo(()="
+        },
+        {
+          "find": ":g,chunks:S}),I=!O||!j?(0,v.jsx)",
+          "replace": ":g,chunks:S}),I=V2!=null?(0,v.jsx)(ue,{pairs:V2}):!O||!j?(0,v.jsx)"
+        },
+        {
+          "find": "ref:A,children:I})}export{m as a",
+          "replace": "ref:A,children:I})}function cd(s){const p=[];let i=0;while(i<s.length){const t=s[i];if(t.kind===`context`){p.push({left:t,right:t});i++;continue}const r=[];while(i<s.length&&s[i].kind===`remove`){r.push(s[i]);i++}const a2=[];while(i<s.length&&s[i].kind===`add`){a2.push(s[i]);i++}const m2=Math.max(r.length,a2.length);for(let k=0;k<m2;k++)p.push({left:r[k],right:a2[k]})}return p}function oe({line:l}){return(0,v.jsx)(`span`,{className:a(`block w-full whitespace-pre-wrap border-l-2 px-2.5 py-px [overflow-wrap:anywhere]`,l?y[l.kind]:`border-transparent`,l?b[l.kind]:``),children:l?(l.text||` `):` `})}function ue({pairs:p}){return(0,v.jsxs)(`div`,{className:`grid w-full grid-cols-2`,children:p.map((t,i)=>(0,v.jsxs)(d.Fragment,{key:i,children:[(0,v.jsx)(oe,{line:t.left}),(0,v.jsx)(oe,{line:t.right})]}))})}export{m as a"
+        }
+      ]
+    },
+    {
+      "path": "assets/main-BCbglDVj.js",
+      "preSha256": "b28fe4dd512487c93accb66d8060b673b8db20c543e6f5768b64b4970e164508",
+      "postSha256": "70df202409d123467920c33a8fdd03611186000b2c8566c8a532ae4358c47fdd",
+      "editCount": 1,
+      "edits": [
+        {
+          "find": "ff:B.inlineDiff,path:M?B.subtitl",
+          "replace": "ff:B.inlineDiff,layout:`split`,path:M?B.subtitl"
+        }
+      ]
+    }
+  ]
+}
