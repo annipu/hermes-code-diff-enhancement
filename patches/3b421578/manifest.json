@@ -1,0 +1,44 @@
+{
+  "id": "cde-3b421578",
+  "targetBuild": "3b421578 (stampClock 2026-11-10T06:30:21Z)",
+  "feature": "code-diff-enhancement (chat tool-card split diff view; preview/review stay unified)",
+  "note": "byte transforms derived from a verified stock/patched pair; NOT a redistribution of host chunks — find anchors locate each edit, replace carries only the added code. Replayer asserts pre/post sha256.",
+  "files": [
+    {
+      "path": "assets/diff-lines-j-Sgrhdt.js",
+      "preSha256": "1c572c790344c4cea5218c8e39e350018f4d9aa8de3efd95e523d7a960b580af",
+      "postSha256": "3f3bb369c552b8394306d7895205e454d9714b3c21ce528854cdf2d10a6d8d5c",
+      "editCount": 4,
+      "edits": [
+        {
+          "find": "function q({className:e,diff:t,fullText:n,path:r,showLineNumbers:i=!1,virtualized:c=!1}){",
+          "replace": "function q({className:e,diff:t,fullText:n,layout:Q=`unified`,path:r,showLineNumbers:i=!1,virtualized:c=!1}){"
+        },
+        {
+          "find": "let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n]),",
+          "replace": "let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n]),V2=n==null&&Q===`split`?cd(l):null,"
+        },
+        {
+          "find": "I=!O||!j?(0,v.jsx)(F,{lines:l}):",
+          "replace": "I=V2!=null?(0,v.jsx)(ue,{pairs:V2}):!O||!j?(0,v.jsx)(F,{lines:l}):"
+        },
+        {
+          "find": "export{m as a,p as i,q as n,V as r,F as t};",
+          "replace": "function cd(s){const p=[];let i=0;while(i<s.length){const t=s[i];if(t.kind===`context`){p.push({left:t,right:t});i++;continue}const r=[];while(i<s.length&&s[i].kind===`remove`){r.push(s[i]);i++}const a2=[];while(i<s.length&&s[i].kind===`add`){a2.push(s[i]);i++}const m2=Math.max(r.length,a2.length);for(let k=0;k<m2;k++)p.push({left:r[k],right:a2[k]})}return p}function oe({line:l}){return(0,v.jsx)(`span`,{className:a(`block w-full whitespace-pre-wrap border-l-2 px-2.5 py-px [overflow-wrap:anywhere]`,l?y[l.kind]:`border-transparent`,l?b[l.kind]:``),children:l?(l.text||` `):` `})}function ue({pairs:p}){return(0,v.jsxs)(`div`,{className:`grid w-full grid-cols-2`,children:p.map((t,i)=>(0,v.jsxs)(d.Fragment,{key:i,children:[(0,v.jsx)(oe,{line:t.left}),(0,v.jsx)(oe,{line:t.right})]}))})}export{m as a,p as i,q as n,V as r,F as t};"
+        }
+      ]
+    },
+    {
+      "path": "assets/main-Dix6zEDd.js",
+      "preSha256": "b60793369050080f7f6b2dc65312a97acdc7fb9148f661fa4d3249ae6eb95ac0",
+      "postSha256": "93079a438c0dfa1c0e8f4f891309969ddecc456611eb37830a93a840f1d35d42",
+      "editCount": 1,
+      "edits": [
+        {
+          "find": "diff:B.inlineDiff,path:M?B.subtitle:void 0})",
+          "replace": "diff:B.inlineDiff,layout:`split`,path:M?B.subtitle:void 0})"
+        }
+      ]
+    }
+  ]
+}

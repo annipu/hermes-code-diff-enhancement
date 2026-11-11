@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // install.mjs — standalone installer for the code-diff-enhancement host patch
-// (recipe cde-8e876298, Hermes Desktop build 8e876298).
+// (auto-selects the recipe matching the target build; see patches/*/manifest.json).
 //
 // What it does: transforms two minified dist files inside a Hermes Desktop
 // app bundle so chat tool-card diffs render side-by-side (old left / new
@@ -33,20 +33,30 @@
 //
 // No npm dependencies. Node >= 18.
 import { createHash } from 'node:crypto'
-import { closeSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, lstatSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)))
-const MANIFEST = JSON.parse(readFileSync(path.join(root, 'patches/8e876298/manifest.json'), 'utf8'))
 
-const USAGE = 'usage: node install.mjs --app=<Hermes.app> [--apply] [--rollback] [--status]'
+// Every patches/<build>/manifest.json is a recipe. Selection happens after the
+// app path resolves: --recipe=<id> pins one, otherwise the recipe whose every
+// file's on-disk hash equals its own pre or post sha (stock or patched state
+// of exactly that build) is chosen; zero or multiple matches refuse.
+const patchesDir = path.join(root, 'patches')
+const RECIPES = readdirSync(patchesDir)
+  .filter(d => existsSync(path.join(patchesDir, d, 'manifest.json')))
+  .map(d => JSON.parse(readFileSync(path.join(patchesDir, d, 'manifest.json'), 'utf8')))
+if (!RECIPES.length) { console.error('ERROR: no recipe manifests found under patches/'); process.exit(1) }
+const recipeIds = () => RECIPES.map(r => r.id).join(', ')
+
+const USAGE = 'usage: node install.mjs --app=<Hermes.app> [--recipe=<id>] [--apply] [--rollback] [--status]'
 const known = new Set(['--apply', '--rollback', '--status'])
 const args = process.argv.slice(2)
 const appArg = args.find(a => a.startsWith('--app='))
-for (const a of args) if (!a.startsWith('--app=') && !known.has(a)) { console.error(`unknown argument: ${a}\n${USAGE}`); process.exit(1) }
+for (const a of args) if (!a.startsWith('--app=') && !a.startsWith('--recipe=') && !known.has(a)) { console.error(`unknown argument: ${a}\n${USAGE}`); process.exit(1) }
 const APPLY = args.includes('--apply')
 const ROLLBACK = args.includes('--rollback') && APPLY // rollback is also a write: requires --apply
 const STATUS = args.includes('--status')
@@ -74,7 +84,31 @@ function assertNoSymlinkChain(p) {
 const appPath = assertNoSymlinkChain(appArg.slice('--app='.length))
 if (!existsSync(appPath)) fail(`app not found: ${appPath}`)
 const ASSETS = path.join(appPath, 'Contents/Resources/app.asar.unpacked/dist/assets')
-const manifestDir = path.join(root, 'patches/8e876298')
+
+// ---------- recipe selection ----------
+const fileHa = name => { const p = path.join(ASSETS, name); if (!existsSync(p)) return null; return sha256(readFileSync(p, 'utf8')) }
+const matchesApp = m => m.files.every(f => { const h = fileHa(path.basename(f.path)); return h === f.preSha256 || h === f.postSha256 })
+const recipeArg = args.find(a => a.startsWith('--recipe='))
+let MANIFEST
+if (recipeArg) {
+  const id = recipeArg.slice('--recipe='.length)
+  MANIFEST = RECIPES.find(r => r.id === id)
+  if (!MANIFEST) fail(`unknown recipe id: ${id} (have: ${recipeIds()})`)
+} else {
+  const hits = RECIPES.filter(matchesApp)
+  if (hits.length === 1) {
+    MANIFEST = hits[0]
+  } else if (hits.length === 0) {
+    // Distinguish "this build with drifted/tampered bytes" from "unknown build":
+    // a recipe whose every file EXISTS here (names all present) is the build —
+    // select it and let the per-file state checks refuse with 'mismatch'.
+    const nameHits = RECIPES.filter(m => m.files.every(f => fileHa(path.basename(f.path)) !== null))
+    if (nameHits.length === 1) MANIFEST = nameHits[0]
+    else fail(`no recipe matches this app build — assets match no known stock/patched state (self-updated?); have: ${recipeIds()}`)
+  } else {
+    fail(`multiple recipes match (${hits.map(r => r.id).join(', ')}) — pass --recipe=<id> to disambiguate`)
+  }
+}
 
 // ---------- process guard (fail-closed) ----------
 function appRunning() {

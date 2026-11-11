@@ -11,22 +11,29 @@ files inside a Hermes Desktop app bundle you point it at.
 ## Scope & requirements
 
 - macOS (tested on arm64), Node >= 18, **no npm install** (Node stdlib only).
-- Targets exactly one Hermes Desktop build: **8e876298**
-  (`hermes-build.json` stampClock `2026-11-06T01:21:46Z`). Any other build —
-  including any self-updated one — is refused (full pre/post SHA-256
-  matching; unknown bytes never pass).
+- Targets specific Hermes Desktop builds — one recipe per build under
+  `patches/<build>/manifest.json`. The installer auto-selects the recipe whose
+  pinned pre/post hashes match the target app (stock or patched state of
+  exactly that build); `--recipe=<id>` pins one explicitly. Current builds:
+  **3b421578** (stampClock `2026-11-10T06:30:21Z`) and **8e876298**
+  (stampClock `2026-11-06T01:21:46Z`). Any other build — including any
+  self-updated one — is refused (full pre/post SHA-256 matching; unknown
+  bytes never pass).
 - Quit Hermes before applying; the installer refuses a running app.
 
 ## What gets patched
 
-Two files under `Hermes.app/Contents/Resources/app.asar.unpacked/dist/assets/`:
+Two files under `Hermes.app/Contents/Resources/app.asar.unpacked/dist/assets/`
+(per build; the 3b421578 recipe is current):
 
-| file | stock SHA-256 | patched SHA-256 |
-|---|---|---|
-| `diff-lines-kfjp4AIL.js` | `a5f9e133eddbde80…` | `907e220f5b79b3ce…` |
-| `main-BCbglDVj.js` | `b28fe4dd512487c9…` | `70df202409d12346…` |
+| build | file | stock SHA-256 | patched SHA-256 |
+|---|---|---|---|
+| 3b421578 | `diff-lines-j-Sgrhdt.js` | `1c572c790344c4ce…` | `3f3bb369c552b839…` |
+| 3b421578 | `main-Dix6zEDd.js` | `b60793369050080f…` | `93079a438c0dfa1c…` |
+| 8e876298 | `diff-lines-kfjp4AIL.js` | `a5f9e133eddbde80…` | `907e220f5b79b3ce…` |
+| 8e876298 | `main-BCbglDVj.js` | `b28fe4dd512487c9…` | `70df202409d12346…` |
 
-The recipe (`patches/8e876298/manifest.json`) stores **byte transforms**
+Each recipe (`patches/<build>/manifest.json`) stores **byte transforms**
 (unique-anchor find/replace pairs) plus pinned pre/post hashes — not copies
 of the host's minified chunks. The installer re-derives the patched bytes
 from *your* stock files and refuses to write unless the result matches the
@@ -68,15 +75,17 @@ rollback source.
 
 ## Adversarial tests
 
-`tests/adversarial.py --app=<disposable-stock-copy>` runs an injected-failure
-matrix against a throwaway copy of the stock app: tampered pre-bytes,
+`tests/adversarial.py --app=<disposable-stock-copy> [--recipe=<id>]` runs an
+injected-failure matrix against a throwaway copy of the stock app: tampered pre-bytes,
 mid-transaction write failure (locked second file) with compensation,
 partial-state recovery, corrupt-backup refusal, live/stale locks, symlinked
 app paths, unknown args, zero-write plan. `tests/stock-baseline/` is derived
 inside the repo (inverse of the recipe transforms, hash-asserted), so the
 matrix needs no access to any private tree.
 
-Verified on the 8e876298 stock build: 10/10 (2026-11-06). Not simulated:
+Verified: 8e876298 stock build 10/10 (2026-11-06) and 3b421578 stock build
+10/10 (2026-11-11), including a full regression of the 8e line after the
+multi-recipe installer change. Not simulated:
 a real SIGKILL mid-write (the resulting state is the partial state covered
 by the recovery case) and a failing `ps` binary (code-level fail-closed).
 
@@ -90,7 +99,7 @@ by the recovery case) and a failing `ps` binary (code-level fail-closed).
 - If the backups under `~/.hermes/host-patches/` are lost or corrupted after
   installing, rollback is no longer possible — restore the app from its
   original distribution instead.
-- Only macOS with the single build listed above is tested; everything else
+- Only macOS with the builds listed above is tested; everything else
   is refused by design.
 
 ## License & notice

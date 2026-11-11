@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Adversarial matrix for install.mjs (recipe cde-8e876298) against the stock
-# frozen copy. Injects failures instead of only testing happy paths:
+# Adversarial matrix for install.mjs (auto-selected or --recipe=<id>) against a
+# disposable stock copy. Injects failures instead of only testing happy paths:
 # tampered pre-bytes, mid-transaction write failure (uchg on the 2nd file),
 # partial state recovery, corrupt backup refusal, live/stale locks, symlinked
 # app path, unknown args. ps-failure fail-closed is a code-level guarantee
@@ -9,30 +9,53 @@ import hashlib, json, os, pathlib, shutil, subprocess, sys
 
 P = pathlib.Path(__file__).resolve().parents[1]          # .local/tmp/cde-public
 # target app comes from --app=<Hermes.app> (a disposable COPY of a stock
-# build-8e876298 app; this matrix mutates its files)
+# app; this matrix mutates its files). --recipe=<id> pins a recipe; by
+# default the recipe whose files match the app bytes is auto-selected.
 _app = next((a[6:] for a in sys.argv[1:] if a.startswith('--app=')), None)
+_rid = next((a[9:] for a in sys.argv[1:] if a.startswith('--recipe=')), None)
 if not _app:
-    print('usage: adversarial.py --app=<path-to-disposable-stock-Hermes.app-copy>')
+    print('usage: adversarial.py --app=<path-to-disposable-stock-Hermes.app-copy> [--recipe=<id>]')
     sys.exit(2)
 APP = pathlib.Path(_app)
 ASSETS = APP / 'Contents/Resources/app.asar.unpacked/dist/assets'
-# self-contained stock source: inverse-derived from the versioned patched bytes
+# self-contained stock source: stock bytes pinned by the recipe hashes
 STOCK_SRC = pathlib.Path(__file__).resolve().parent / 'stock-baseline'
-assert (STOCK_SRC / 'main-BCbglDVj.js').exists(), 'stock baseline missing (run the inverse step)'
-M = json.loads((P / 'patches/8e876298/manifest.json').read_text(encoding='utf-8'))
-PRE = {f['path'].split('/')[-1]: f['preSha256'] for f in M['files']}
-POST = {f['path'].split('/')[-1]: f['postSha256'] for f in M['files']}
-DL, MAIN = 'diff-lines-kfjp4AIL.js', 'main-BCbglDVj.js'
-APPKEY_DIR = pathlib.Path(os.environ['HOME']) / '.hermes/host-patches'
+_patches = P / 'patches'
+_all = {m['id']: m for m in (
+    json.loads((_patches / d / 'manifest.json').read_text(encoding='utf-8'))
+    for d in sorted(os.listdir(_patches)) if (_patches / d / 'manifest.json').exists())}
+
+def _file_ha(name):
+    p = ASSETS / name
+    return sha(p) if p.exists() else None
+
+def _matches(m):
+    return all(_file_ha(f['path'].split('/')[-1]) in (f['preSha256'], f['postSha256']) for f in m['files'])
 
 sha = lambda p: hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+
+if _rid:
+    if _rid not in _all:
+        sys.exit(f'unknown recipe id: {_rid} (have: {", ".join(_all)})')
+    M = _all[_rid]
+else:
+    cands = [m for m in _all.values() if _matches(m)]
+    if len(cands) != 1:
+        sys.exit(f'auto-match found {len(cands)} recipes; pass --recipe=<id> (have: {", ".join(_all)})')
+    M = cands[0]
+print(f'[adversarial] recipe {M["id"]} — target {M["targetBuild"]}')
+for _n in (f['path'].split('/')[-1] for f in M['files']):
+    assert (STOCK_SRC / _n).exists(), f'stock baseline missing for {_n}'
+PRE = {f['path'].split('/')[-1]: f['preSha256'] for f in M['files']}
+POST = {f['path'].split('/')[-1]: f['postSha256'] for f in M['files']}
+DL, MAIN = (f['path'].split('/')[-1] for f in M['files'])
+APPKEY_DIR = pathlib.Path(os.environ['HOME']) / '.hermes/host-patches'
 def state_dir():
-    if not APPKEY_DIR.exists():
-        return None
-    for d in APPKEY_DIR.iterdir():
-        if (d / 'backup').exists() or (d / 'install.lock').exists():
-            return d
-    return None
+    # exact state dir for THIS recipe + THIS app (mirrors install.mjs appKey);
+    # never scan other apps' or other recipes' leftovers
+    key = f"{M['id']}-{hashlib.sha256(str(APP).encode()).hexdigest()[:8]}"
+    d = APPKEY_DIR / key
+    return d if (d / 'backup').exists() or (d / 'install.lock').exists() else None
 
 def run(*extra):
     r = subprocess.run(['node', str(P / 'install.mjs'), f'--app={APP}', *extra],
