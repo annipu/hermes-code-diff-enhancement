@@ -15,8 +15,9 @@ files inside a Hermes Desktop app bundle you point it at.
   `patches/<build>/manifest.json`. The installer auto-selects the recipe whose
   pinned pre/post hashes match the target app (stock or patched state of
   exactly that build); `--recipe=<id>` pins one explicitly. Current builds:
-  **3b421578** (stampClock `2026-11-10T06:30:21Z`) and **8e876298**
-  (stampClock `2026-11-06T01:21:46Z`). Any other build — including any
+  **8fc037444** (stampClock `2026-11-25T13:44:02Z`), **3b421578** (stampClock
+  `2026-11-10T06:30:21Z`) and **8e876298** (stampClock `2026-11-06T01:21:46Z`).
+  Any other build — including any
   self-updated one — is refused (full pre/post SHA-256 matching; unknown
   bytes never pass).
 - Quit Hermes before applying; the installer refuses a running app.
@@ -24,10 +25,12 @@ files inside a Hermes Desktop app bundle you point it at.
 ## What gets patched
 
 Two files under `Hermes.app/Contents/Resources/app.asar.unpacked/dist/assets/`
-(per build; the 3b421578 recipe is current):
+(per build; the 8fc037444 recipe is current):
 
 | build | file | stock SHA-256 | patched SHA-256 |
 |---|---|---|---|
+| 8fc037444 | `diff-lines-BBf7aAJR.js` | `c70c57ad8d12bd70…` | `7b6c89cbdfd27634…` |
+| 8fc037444 | `main-CyuuCnKH.js` | `a7a90d849209ffea…` | `81c10db1e900f2cf…` |
 | 3b421578 | `diff-lines-j-Sgrhdt.js` | `1c572c790344c4ce…` | `3f3bb369c552b839…` |
 | 3b421578 | `main-Dix6zEDd.js` | `b60793369050080f…` | `93079a438c0dfa1c…` |
 | 8e876298 | `diff-lines-kfjp4AIL.js` | `a5f9e133eddbde80…` | `907e220f5b79b3ce…` |
