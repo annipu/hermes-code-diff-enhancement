@@ -1,0 +1,40 @@
+{
+  "id": "cde-8fc037444",
+  "targetBuild": "8fc037444 (stampClock 2026-11-25T13:44:02.925Z)",
+  "feature": "code-diff-enhancement (chat tool-card split diff view; preview/review stay unified)",
+  "note": "byte transforms derived from a verified stock/patched pair; NOT a redistribution of host chunks — find anchors locate each edit, replace carries only the added code. Replayer asserts pre/post sha256.",
+  "files": [
+    {
+      "path": "assets/diff-lines-BBf7aAJR.js",
+      "preSha256": "c70c57ad8d12bd704dc461d2910fe578827840809f5cb5a82b6e0068275f7a7c",
+      "postSha256": "7b6c89cbdfd27634d3aa5184dd80dcd8c152f8f6743ad750ed3e1c677b74c07a",
+      "editCount": 3,
+      "edits": [
+        {
+          "find": "path:r,showLineNumbers:i=!1,virtualized:c=!1}){let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n])",
+          "replace": "layout:Q=`unified`,path:r,showLineNumbers:i=!1,virtualized:c=!1}){let l=d.useMemo(()=>n==null?N(t):P(t,n),[t,n]),V2=n==null&&Q===`split`?cd(l):null"
+        },
+        {
+          "find": "afterLines:p,beforeLines:g,chunks:S}),I=!O||!j?(0,v.jsx)(F,{lines:l}):n==null?(0",
+          "replace": "afterLines:p,beforeLines:g,chunks:S}),I=V2!=null?(0,v.jsx)(ue,{pairs:V2}):!O||!j?(0,v.jsx)(F,{lines:l}):n==null?(0"
+        },
+        {
+          "find": "slot\":`file-diff-panel`,ref:A,children:I})}export{m as a,p as i,q as n,V as r,F ",
+          "replace": "slot\":`file-diff-panel`,ref:A,children:I})}function cd(s){const p=[];let i=0;while(i<s.length){const t=s[i];if(t.kind===`context`){p.push({left:t,right:t});i++;continue}const r=[];while(i<s.length&&s[i].kind===`remove`){r.push(s[i]);i++}const a2=[];while(i<s.length&&s[i].kind===`add`){a2.push(s[i]);i++}const m2=Math.max(r.length,a2.length);for(let k=0;k<m2;k++)p.push({left:r[k],right:a2[k]})}return p}function oe({line:l}){return(0,v.jsx)(`span`,{className:a(`block w-full whitespace-pre-wrap border-l-2 px-2.5 py-px [overflow-wrap:anywhere]`,l?y[l.kind]:`border-transparent`,l?b[l.kind]:``),children:l?(l.text||` `):` `})}function ue({pairs:p}){return(0,v.jsxs)(`div`,{className:`grid w-full grid-cols-2`,children:p.map((t,i)=>(0,v.jsxs)(d.Fragment,{key:i,children:[(0,v.jsx)(oe,{line:t.left}),(0,v.jsx)(oe,{line:t.right})]}))})}export{m as a,p as i,q as n,V as r,F "
+        }
+      ]
+    },
+    {
+      "path": "assets/main-CyuuCnKH.js",
+      "preSha256": "a7a90d849209ffea1e5f1f53c9be6fa95de8b3c34504405b27bfbbfc8f5d8386",
+      "postSha256": "81c10db1e900f2cfad79f5098cffe9366aeb744fc738e53d2ed424269a20a057",
+      "editCount": 1,
+      "edits": [
+        {
+          "find": ",{className:`-mt-1.5`,diff:B.inlineDiff,path:M?B.subtitle:void 0}),fe&&!W&&(B.st",
+          "replace": ",{className:`-mt-1.5`,diff:B.inlineDiff,layout:`split`,path:M?B.subtitle:void 0}),fe&&!W&&(B.st"
+        }
+      ]
+    }
+  ]
+}
